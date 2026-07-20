@@ -8,6 +8,8 @@
 
 No project code lives in this repo — it's just the write-up.
 
+![The whole bench rig: Vue 3 board, hand-soldered wires, and the USB adapter](images/bench-rig-overview.jpg)
+
 ---
 
 ## Foreword: Before You Read This as My Work Alone
@@ -37,6 +39,8 @@ This isn't my first finished project with Claude, either — I've completed othe
 I've got an Emporia Vue 3 sitting in a panel here in Peru, on 3-phase, 240V service, and what I actually want out of it is circuit-by-circuit visibility — not just a total kWh number, but every one of the sixteen breakers I'm monitoring, separately, in Home Assistant. That meant local open-source firmware instead of phoning home to Emporia's cloud: faster updates, works offline, and I can automate on the data without asking anyone's permission. The community that maintains the ESPHome component for this board has a whole [tutorial site and software](https://emporia-vue-local.github.io/) for exactly this, so that's where we started: back up the factory firmware first, then flash.
 
 The Vue 3 doesn't give you a header to clip onto. You solder directly to five bare test pads on the board: RXD, TXD, GND, an IO0 pad you jumper to ground to force the chip into its bootloader, and a 3.3V pad to power the thing while it's out of the panel. I don't own a fine-tip soldering iron suited to pads the size of a grain of rice — I used the pointiest iron I had and just kept at each pad until the wire held. Barely. That word is going to matter later.
+
+![Hand-soldered wires on the RXD/TXD/GND test pads](images/test-point-soldering.jpg)
 
 I got the wiring backwards exactly once, sent a photo, and had it corrected before anything got plugged in. Small win, but I'll take it — this is the kind of mistake that, done with real mains voltage instead of 3.3V, doesn't get a do-over.
 
@@ -89,11 +93,15 @@ The ESP32's brownout detector exists to force a clean reset the instant supply v
 
 Claude's working theory: the tiny linear regulator soldered onto the [two-dollar USB-serial adapter](https://www.amazon.com/dp/B00LZV1G6K?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1) I was using is built to blink an LED, not run an ESP32 through a Wi-Fi radio's current draw. We tried a different USB port on the theory that a beefier port might help. Identical loop, right down to the timing. Not a port problem.
 
+![The USB-to-TTL adapter's pinout: GND, RXD, TXD, 3V3, VCC, 5V](images/usb-adapter-pinout.jpg)
+
 ### 05 — The Wire That Wouldn't Stay Put
 
 While chasing the power problem, the board went completely silent — not even the brownout loop, just nothing on the serial monitor. That's a different, worse symptom: it usually means the wire carrying the board's transmit signal back to my adapter has lost contact, not that the firmware is misbehaving.
 
 Sure enough, the White wire — hand-soldered to a bare pad the size of a grain of rice — had worked itself loose. Re-soldered it. Fine for a while. Then, a few reflashes later, silence again. Same wire, same pad. Twice was enough to learn the lesson: this time I added a small anchor of hot glue a few millimeters back from the joint, so any tug on the wire pulls against the glue instead of the solder.
+
+![Heat-shrunk splice joints extending the test-point wires down to the adapter](images/wire-splices.jpg)
 
 > **Note to self:** A loose wire and a starved power supply produce almost the same silence on a serial monitor. Don't assume it's the interesting bug; check the boring one first.
 
